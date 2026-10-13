@@ -7,3 +7,13 @@
 .bottom-controls .grid-picker{flex-shrink:0}
 footer{bottom:76px;max-width:calc(100vw - 24px)}
 @media(max-width:700px){.bottom-controls{right:8px;bottom:8px;padding:5px;gap:4px}.bottom-controls button{padding:6px}.bottom-controls .grid-picker select{max-width:110px;font-size:12px}footer{bottom:65px}}
+
+.color-control{position:relative;display:inline-flex;align-items:center;flex-shrink:0}
+.color-trigger{width:38px;height:36px;padding:5px;display:flex;align-items:center;justify-content:center}
+.current-color{width:24px;height:24px;display:block;border:1px solid #b8bdc5;border-radius:4px}
+.color-popover{position:absolute;z-index:100;top:calc(100% + 8px);left:0;width:216px;padding:10px;background:#fff;border:1px solid #d4d8df;border-radius:10px;box-shadow:0 5px 20px #0002}
+.color-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.color-swatch{width:33px;height:33px;padding:0;border:1px solid #b7bec8;border-radius:6px}
+.color-swatch.chosen{outline:2px solid #2675e8;outline-offset:1px}
+.custom-color{display:flex;align-items:center;justify-content:space-between;margin-top:10px;font-size:12px}
+.custom-color input[type=color]{cursor:pointer}
