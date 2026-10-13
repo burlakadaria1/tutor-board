@@ -11,6 +11,9 @@ const PALETTE=['#000000','#555555','#999999','#FFFFFF','#E53935','#FF9800','#FFE
 const WIDTH=1600, HEIGHT=100000, KEY='tutor-board-v1';
 const GRID_ID='00000000-0000-4000-8000-000000000001';
 const initial=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{return []}};
+const VIEW_KEY='tutor-board-viewport-v1';
+const savedViewport=()=>{try{const v=JSON.parse(localStorage.getItem(VIEW_KEY));if(v&&Number.isFinite(v.zoom)&&v.zoom>=.25&&v.zoom<=3&&Number.isFinite(v.x)&&Number.isFinite(v.y))return v}catch{}return null};
+
 // Distance between a moving eraser segment and each stroke segment.
 const dist2=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const dot=(a,b)=>a.x*b.x+a.y*b.y;
@@ -32,7 +35,8 @@ function imageTouched(item,a,b,radius){
 }
 function strokeTouched(item,a,b,radius){if(!['pen','line','arrow','dashed'].includes(item.type))return false;const pts=item.points||[];const radiusWithStroke=radius+(item.size||1)/2;for(let n=0;n<pts.length;n+=2){const c={x:pts[n],y:pts[n+1]};const d=n+2<pts.length?{x:pts[n+2],y:pts[n+3]}:c;if(segmentsDistance(a,b,c,d)<=radiusWithStroke)return true}return false}
 function Board(){
- const [items,setItems]=useState([]),[tool,setTool]=useState('pen'),[color,setColor]=useState('#222222'),[colorsOpen,setColorsOpen]=useState(false),[colorPopupPos,setColorPopupPos]=useState({top:70,left:0}),[size,setSize]=useState(3),[zoom,setZoom]=useState(1),[view,setView]=useState({x:0,y:0}),[screen,setScreen]=useState({w:innerWidth,h:innerHeight-64}),[selected,setSelected]=useState(null),[history,setHistory]=useState([]),[future,setFuture]=useState([]);
+ const initialViewport=useRef(savedViewport()).current;
+ const [items,setItems]=useState([]),[tool,setTool]=useState('pen'),[color,setColor]=useState('#222222'),[colorsOpen,setColorsOpen]=useState(false),[colorPopupPos,setColorPopupPos]=useState({top:70,left:0}),[size,setSize]=useState(3),[zoom,setZoom]=useState(()=>initialViewport?.zoom??1),[view,setView]=useState(()=>({x:initialViewport?.x??0,y:initialViewport?.y??0})),[screen,setScreen]=useState({w:innerWidth,h:innerHeight-64}),[selected,setSelected]=useState(null),[history,setHistory]=useState([]),[future,setFuture]=useState([]);
  const [gridSize,setGridSize]=useState(0);
  const eraserSize=12;
  const [eraserCursor,setEraserCursor]=useState(null);
@@ -46,6 +50,7 @@ function Board(){
  const endpointDrag=useRef(null);
  const stage=useRef(null),active=useRef(null),drag=useRef(null),imageCache=useRef({}),[imageVersion,setImageVersion]=useState(0),transformer=useRef(null),imageNodes=useRef({});
  useEffect(()=>{const update=()=>setScreen({w:innerWidth,h:innerHeight-64});window.addEventListener('resize',update);return()=>window.removeEventListener('resize',update)},[]);
+ useEffect(()=>{try{localStorage.setItem(VIEW_KEY,JSON.stringify({zoom,x:view.x,y:view.y}))}catch{}},[zoom,view.x,view.y]);
  useEffect(()=>{try{localStorage.setItem(KEY,JSON.stringify(items))}catch{alert('Хранилище браузера заполнено. Попробуйте уменьшить размер изображений.')}},[items]);
  useEffect(()=>{if(transformer.current){const node=imageNodes.current[selected];transformer.current.nodes(tool==='select'&&node?[node]:[]);transformer.current.getLayer()?.batchDraw()}},[selected,items,tool,imageVersion]);
  useEffect(()=>{items.filter(i=>i.type==='image'&&!imageCache.current[i.id]).forEach(i=>{const img=new window.Image();img.onload=()=>{imageCache.current[i.id]=img;setImageVersion(v=>v+1)};img.src=i.src})},[items]);
